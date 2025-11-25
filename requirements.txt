@@ -1,0 +1,66 @@
+# requirements.txt - LangChain 1.0 + Elasticsearch + OpenAI Embeddings + LangSmith
+
+# ========================================
+# Core LangChain & LangGraph - v1.0+
+# ========================================
+langchain>=0.3.7
+langgraph>=0.2.45
+langchain-core>=0.3.19
+langchain-anthropic>=0.3.0
+
+# ========================================
+# OpenAI Integration (NUEVO)
+# ========================================
+langchain-openai>=0.2.0
+
+# ========================================
+# LangChain Community
+# ========================================
+langchain-community>=0.3.7
+
+# ========================================
+# RAG - Elasticsearch Vector Store
+# ========================================
+elasticsearch>=8.15.0
+langchain-elasticsearch>=0.3.0
+
+# ========================================
+# Document Loaders
+# ========================================
+pypdf>=5.0.0
+unstructured>=0.16.0
+
+# ========================================
+# Cálculo Numérico
+# ========================================
+numpy>=1.26.0
+numpy-financial>=1.0.0
+scipy>=1.14.0
+
+# ========================================
+# Validación y Modelos
+# ========================================
+pydantic>=2.9.0,<3.0
+
+# ========================================
+# Interfaz Web
+# ========================================
+streamlit>=1.39.0
+
+# ========================================
+# Utilidades
+# ========================================
+python-dotenv>=1.0.0
+
+# ========================================
+# LangSmith (Observabilidad)
+# ========================================
+langsmith>=0.1.0
+
+# ========================================
+# NOTAS IMPORTANTES
+# ========================================
+# 1. Se eliminó sentence-transformers (ya no se usa)
+# 2. Se agregó langchain-openai para embeddings de OpenAI
+# 3. OpenAI embeddings son mucho más rápidos que HuggingFace en CPU
+# 4. Costo estimado: ~$0.02 por 1M tokens con text-embedding-3-small
