@@ -36,67 +36,8 @@ Una aplicación web interactiva construida con Streamlit y LangGraph que actúa 
 * **Código Estructurado:** Organizado en módulos para mejor mantenibilidad (`config`, `tools`, `agents`, `graph`, `rag`).
 
 ## 🏛️ Arquitectura
+<img width="2613" height="1626" alt="mermaid-diagram-2025-11-25-062826" src="https://github.com/user-attachments/assets/d6a906d3-1ffa-4f57-b90e-321906a95ff3" />
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e3f2fd','primaryTextColor':'#1565c0','primaryBorderColor':'#1976d2','lineColor':'#424242','secondaryColor':'#fff3e0','tertiaryColor':'#f3e5f5'}}}%%
-
-flowchart TD
-    START([🚀 USUARIO<br/>Streamlit UI])
-    
-    START --> INPUT[📝 Input Query<br/>HumanMessage]
-    
-    INPUT --> SUPERVISOR{🧭 SUPERVISOR<br/>Claude 3.5 Haiku<br/>RouterSchema}
-    
-    SUPERVISOR -->|Consultas Teóricas| RAG[📚 AGENTE RAG<br/>buscar_documentacion_financiera]
-    SUPERVISOR -->|Ayuda y Ejemplos| HELP[❓ AGENTE AYUDA<br/>obtener_ejemplos_de_uso]
-    SUPERVISOR -->|VAN y WACC| CORP[💼 AGENTE FIN. CORP<br/>calcular_van + calcular_wacc]
-    SUPERVISOR -->|Valoración Bonos| BOND[📊 AGENTE RENTA FIJA<br/>calcular_valor_bono]
-    SUPERVISOR -->|Gordon Growth| EQUITY[📈 AGENTE EQUITY<br/>calcular_gordon_growth]
-    SUPERVISOR -->|CAPM y Sharpe| PORT[📂 AGENTE PORTAFOLIO<br/>calcular_capm + sharpe_ratio]
-    SUPERVISOR -->|Opciones Call| DERIV[💹 AGENTE DERIVADOS<br/>calcular_opcion_call]
-    
-    RAG --> RAGVS[(🔍 ELASTICSEARCH<br/>Vector Store<br/>OpenAI Embeddings)]
-    RAGVS --> RAGDOCS[📄 Material Financiero<br/>Fragmentos Relevantes]
-    RAGDOCS --> RAGEND[Respuesta Contextual]
-    
-    HELP --> HELPEND[Guía de Preguntas]
-    
-    CORP --> TOOLS1[🧮 Python Tools<br/>numpy-financial]
-    BOND --> TOOLS1
-    EQUITY --> TOOLS1
-    PORT --> TOOLS1
-    DERIV --> TOOLS1
-    
-    TOOLS1 --> CALC[Cálculo Ejecutado<br/>JSON Result]
-    
-    CALC --> BACK[⬅️ AIMessage]
-    BACK --> SUPERVISOR
-    
-    SUPERVISOR -->|Tarea Completa| FINISH{✅ FINISH?}
-    
-    FINISH -->|Si| END([💬 RESPUESTA FINAL<br/>Usuario ve resultado])
-    FINISH -->|No Continuar| SUPERVISOR
-    
-    RAGEND --> END
-    HELPEND --> END
-    
-    SUPERVISOR -.->|Error Count mayor o igual a 2| BREAK[🚨 Circuit Breaker<br/>Detener Proceso]
-    BREAK --> END
-    
-    classDef userNode fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
-    classDef supervisorNode fill:#2196f3,stroke:#1565c0,stroke-width:3px,color:#fff
-    classDef agentNode fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
-    classDef toolNode fill:#9c27b0,stroke:#6a1b9a,stroke-width:2px,color:#fff
-    classDef ragNode fill:#00bcd4,stroke:#006064,stroke-width:2px,color:#fff
-    classDef endNode fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
-    
-    class START,END userNode
-    class SUPERVISOR,FINISH supervisorNode
-    class CORP,BOND,EQUITY,PORT,DERIV,HELP agentNode
-    class RAG,RAGVS,RAGDOCS ragNode
-    class TOOLS1,CALC toolNode
-    class BREAK endNode
-```
 
 ### Flujo de Ejecución:
 
