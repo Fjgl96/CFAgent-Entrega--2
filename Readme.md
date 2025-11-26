@@ -16,7 +16,7 @@ Una aplicación web interactiva construida con Streamlit y LangGraph que actúa 
 
 * **Interfaz Web Interactiva:** Creada con Streamlit para facilitar las consultas.
 * **Arquitectura Multi-Agente:** Utiliza LangGraph con un agente "Supervisor" que direcciona las consultas al especialista adecuado.
-* **Sistema RAG Integrado:** Búsqueda semántica en material financiero usando Elasticsearch + OpenAI Embeddings.
+* **Sistema RAG Integrado:** Búsqueda semántica en material financiero usando Elasticsearch + OpenAI Embeddings (text-embedding-3-large).
 * **22 Herramientas Financieras de CFA Level I:**
     * **Renta Fija (6):** Valoración de Bonos, Duration Macaulay, Duration Modificada, Convexity, Current Yield, Bonos Cupón Cero
     * **Finanzas Corporativas (5):** VAN (NPV), WACC, TIR (IRR), Payback Period, Profitability Index
@@ -28,7 +28,8 @@ Una aplicación web interactiva construida con Streamlit y LangGraph que actúa 
     * RAG (Consultas a material de estudio)
     * Síntesis RAG (Generación de respuestas contextuales)
     * Ayuda (Guía de uso)
-* **Modelo de Lenguaje:** Impulsado por Anthropic Claude 3.5 Haiku (configurable).
+* **Modelo de Lenguaje:** Anthropic Claude 3.5 Haiku (claude-3-5-haiku-20241022)
+* **Embeddings:** OpenAI text-embedding-3-large (3072 dimensiones) para búsqueda semántica
 * **Observabilidad:** Integración opcional con LangSmith para tracing y debugging.
 * **Manejo de Errores:** Incluye un "Circuit Breaker" inteligente para evitar bucles infinitos.
 * **Seguridad:** Configuración de API Keys mediante variables de entorno y Streamlit Secrets (no hardcodeado).
@@ -44,7 +45,7 @@ flowchart TD
     
     START --> INPUT[📝 Input Query<br/>HumanMessage]
     
-    INPUT --> SUPERVISOR{🧭 SUPERVISOR<br/>Claude 3 Haiku<br/>RouterSchema}
+    INPUT --> SUPERVISOR{🧭 SUPERVISOR<br/>Claude 3.5 Haiku<br/>RouterSchema}
     
     SUPERVISOR -->|Consultas Teóricas| RAG[📚 AGENTE RAG<br/>buscar_documentacion_financiera]
     SUPERVISOR -->|Ayuda y Ejemplos| HELP[❓ AGENTE AYUDA<br/>obtener_ejemplos_de_uso]
@@ -54,7 +55,7 @@ flowchart TD
     SUPERVISOR -->|CAPM y Sharpe| PORT[📂 AGENTE PORTAFOLIO<br/>calcular_capm + sharpe_ratio]
     SUPERVISOR -->|Opciones Call| DERIV[💹 AGENTE DERIVADOS<br/>calcular_opcion_call]
     
-    RAG --> RAGVS[(🔍 ELASTICSEARCH<br/>Vector Store<br/>Embeddings)]
+    RAG --> RAGVS[(🔍 ELASTICSEARCH<br/>Vector Store<br/>OpenAI Embeddings)]
     RAGVS --> RAGDOCS[📄 Material Financiero<br/>Fragmentos Relevantes]
     RAGDOCS --> RAGEND[Respuesta Contextual]
     
@@ -112,7 +113,7 @@ flowchart TD
 - **Supervisor:** Orquestador inteligente con Claude 3.5 Haiku y Circuit Breaker
 - **8 Agentes Especializados:** Renta Fija, Finanzas Corp, Equity, Portafolio, Derivados, RAG, Síntesis RAG, Ayuda
 - **22 Python Tools:** Cálculos deterministas de CFA Level I con numpy/scipy
-- **Sistema RAG:** Elasticsearch + OpenAI Embeddings para búsqueda semántica
+- **Sistema RAG:** Elasticsearch + OpenAI Embeddings (text-embedding-3-large) para búsqueda semántica en material de estudio
 - **MemorySaver:** Persistencia de contexto durante la sesión
 
 ## 🚀 Ejemplos de Uso (Guía de Preguntas)
@@ -174,14 +175,16 @@ Sigue estos pasos para ejecutar la aplicación en tu máquina local.
 * **Python:** Versión 3.9 o superior recomendada.
 * **Git:** Para clonar el repositorio.
 * **Anthropic API Key:** Necesitas una clave API de Anthropic.
+* **OpenAI API Key:** Necesaria para generar embeddings del sistema RAG.
 * **(Opcional) LangSmith API Key:** Para observabilidad y debugging.
+* **Elasticsearch:** Servidor Elasticsearch corriendo (para funcionalidad RAG).
 
 ### Pasos de Instalación
 
 1.  **Clonar el Repositorio:**
     ```bash
-    git clone https://github.com/TU_USUARIO/TU_REPOSITORIO.git
-    cd TU_REPOSITORIO
+    git clone https://github.com/Fjgl96/CFAgent-Entrega--2.git
+    cd CFAgent-Entrega--2
     ```
 
 2.  **Crear y Activar Entorno Virtual:** (Altamente recomendado)
@@ -207,11 +210,18 @@ Sigue estos pasos para ejecutar la aplicación en tu máquina local.
     * Añade tus API keys y credenciales de Elasticsearch dentro de este archivo:
         ```ini
         # .env
-        ANTHROPIC_API_KEY="sk-ant-api03-..."
-        LANGSMITH_API_KEY="lsv2_pt_..."  # Opcional
-        LANGCHAIN_PROJECT="financial-agent-dev"  # Opcional
         
-        # Elasticsearch Configuration
+        # Anthropic (LLM - REQUERIDO)
+        ANTHROPIC_API_KEY="sk-ant-api03-..."
+        
+        # OpenAI (Embeddings para RAG - REQUERIDO)
+        OPENAI_API_KEY="sk-proj-..."
+        
+        # LangSmith (Opcional - para observabilidad)
+        LANGSMITH_API_KEY="lsv2_pt_..."
+        LANGCHAIN_PROJECT="financial-agent-dev"
+        
+        # Elasticsearch Configuration (para RAG)
         ES_HOST="tu-servidor-elasticsearch.com"
         ES_PORT="9200"
         ES_USERNAME="elastic"
@@ -252,9 +262,15 @@ Sigue estos pasos para ejecutar la aplicación en tu máquina local.
     * Antes de hacer clic en "Deploy!", ve a "Advanced settings..." > "Secrets".
     * Pega tus API keys y configuración de Elasticsearch usando el formato TOML:
         ```toml
-        ANTHROPIC_API_KEY = "sk-ant-api03-..." 
-        LANGSMITH_API_KEY = "lsv2_pt_..."  # Opcional
-        LANGCHAIN_PROJECT = "financial-agent-prod"  # Opcional
+        # Anthropic (LLM - REQUERIDO)
+        ANTHROPIC_API_KEY = "sk-ant-api03-..."
+        
+        # OpenAI (Embeddings para RAG - REQUERIDO)
+        OPENAI_API_KEY = "sk-proj-..."
+        
+        # LangSmith (Opcional)
+        LANGSMITH_API_KEY = "lsv2_pt_..."
+        LANGCHAIN_PROJECT = "financial-agent-prod"
         
         # Elasticsearch
         ES_HOST = "tu-servidor-elasticsearch.com"
@@ -272,7 +288,7 @@ Sigue estos pasos para ejecutar la aplicación en tu máquina local.
 El repositorio está organizado de forma modular para facilitar la mantenibilidad y la adición de nuevos agentes o herramientas:
 
 ```bash
-tu_repositorio/
+CFAgent-Entrega--2/
 ├── agents/                 # Define los agentes especialistas y el supervisor
 │   ├── __init__.py
 │   └── financial_agents.py
@@ -291,10 +307,10 @@ tu_repositorio/
 │   └── generate_index.py   # Indexador de material financiero
 ├── data/                   # Datos persistentes (no en repo)
 │   └── cfa_books/         # PDFs de material financiero
+├── utils/                  # Utilidades
+│   └── logger.py          # Sistema de logging
 ├── config.py              # Configuración (LLM, API keys, LangSmith)
-├── config_elasticsearch.py # Configuración (legacy, no usado actualmente)
-├── database/              # Conexión a BD (opcional, no usado en MVP)
-│   └── connection.py
+├── config_elasticsearch.py # Configuración de Elasticsearch
 ├── requirements.txt       # Dependencias del proyecto
 ├── streamlit_app.py       # El punto de entrada de la app web
 ├── .env.example          # Ejemplo de variables de entorno
@@ -323,13 +339,35 @@ Este proyecto está bajo la Licencia MIT.
 
 ---
 
-**Stack Tecnológico:**
+## 🔧 Stack Tecnológico
+
+**Core:**
 - LangChain 0.3.0+
 - LangGraph 0.2.0+
-- Anthropic Claude 3.5 Haiku
 - Streamlit 1.39+
+
+**Modelo de Lenguaje:**
+- Anthropic Claude 3.5 Haiku (claude-3-5-haiku-20241022)
+
+**Sistema RAG:**
 - Elasticsearch 8.15+ (Vector Store)
-- HuggingFace Embeddings (sentence-transformers)
-- Pydantic 2.0
+- OpenAI text-embedding-3-large (3072 dimensiones)
+
+**Cálculo Numérico:**
 - NumPy, SciPy, numpy-financial
-- LangSmith (Opcional)
+
+**Validación:**
+- Pydantic 2.0+
+
+**Observabilidad (Opcional):**
+- LangSmith
+
+**Costos Estimados:**
+- Claude 3.5 Haiku: ~$1 por 1M tokens de entrada, ~$5 por 1M tokens de salida
+- OpenAI Embeddings: ~$0.13 por 1M tokens
+
+---
+
+**Desarrollado por:** Francisco Jesús Guerrero López  
+**Institución:** Instituto de Datos e Inteligencia Artificial - URP  
+**Fecha:** Noviembre 2025
